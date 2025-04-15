@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نموذج تسجيل ديناميكي</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background-color: #f2f2f2;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h4 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    input[type="checkbox"],
+    input[type="radio"] {
+      margin-left: 6px;
+    }
+    input[type="submit"],
+    button {
+      background-color: #e74c3c;
+      color: white;
+      padding: 20px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      margin-top: 20px;
+      text-align: center;
+      transition: all 0.3s ease-in-out;
+      animation: pulse 1s infinite;
+    }
+    input[type="submit"]:hover,
+    button:hover {
+      background-color: #c0392b;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .options-area {
+      margin-bottom: 15px;
+    }
+    .option-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <form name="contact-form" id="contact-form">
+    <h4>نموذج التسجيل</h4>
+    <label>الاسم الكامل:</label>
+    <input type="text" name="fullname" required placeholder="مثال: أحمد محمد">
+    <label>رقم الهاتف:</label>
+    <input type="text" name="phone" required placeholder="مثال: 0555xxxxxx">
+    <label>العنوان والولاية:</label>
+    <input type="text" name="address_state" required placeholder="مثال: حي النصر، سطيف">
+    
+    <div id="colorsField" class="options-area" style="display:none;">
+      <label>اختر الألوان:</label>
+      <div id="colorsOptions"></div>
+    </div>
+
+    <div id="sizesField" class="options-area" style="display:none;">
+      <label>اختر المقاسات:</label>
+      <div id="sizesOptions"></div>
+    </div>
+
+    <div id="deliveryField" class="options-area" style="display:none;">
+      <label>مكان التوصيل:</label>
+      <div id="deliveryOptions"></div>
+    </div>
+
+    <input type="submit" value="إرسال">
+  </form>
+</div>
+
+<script>
+  const optionsData = {
+    colors: ["أسود", "أبيض", "أحمر"],
+    sizes: ["S", "M", "L"],
+    delivery: ["إلى المنزل", "إلى المكتب"]
+  };
+
+  function generateOptions(type, containerId) {
+    const container = document.getElementById(containerId);
+    const choiceType = "radio"; // ثابت بدون اختيار ديناميكي
+    container.innerHTML = "";
+
+    optionsData[type].forEach((option, i) => {
+      const input = document.createElement("input");
+      input.type = choiceType;
+      input.name = type + (choiceType === "checkbox" ? "[]" : "");
+      input.value = option;
+      input.id = `${type}_${i}`;
+
+      const label = document.createElement("label");
+      label.className = "option-label";
+      label.htmlFor = input.id;
+
+      const text = document.createTextNode(" " + option);
+      const labelWrap = document.createElement("div");
+      labelWrap.appendChild(input);
+      labelWrap.appendChild(text);
+
+      label.appendChild(labelWrap);
+      container.appendChild(label);
+    });
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    if (optionsData.colors.length) {
+      document.getElementById("colorsField").style.display = "block";
+      generateOptions("colors", "colorsOptions");
+    }
+    if (optionsData.sizes.length) {
+      document.getElementById("sizesField").style.display = "block";
+      generateOptions("sizes", "sizesOptions");
+    }
+    if (optionsData.delivery.length) {
+      document.getElementById("deliveryField").style.display = "block";
+      generateOptions("delivery", "deliveryOptions");
+    }
+  });
+
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxSdVNiIpLYT3O5wwH789RM8b155LJXlm7fnsCkpqD-jMbe_LTQi0hdHBFasi2B93nUTQ/exec';
+  const form = document.forms['contact-form'];
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    ['colors', 'sizes', 'delivery'].forEach(type => {
+      const inputs = document.querySelectorAll(`input[name="${type}[]"]:checked, input[name="${type}"]:checked`);
+      const values = Array.from(inputs).map(i => i.value).join(', ');
+      if (values) formData.set(type, values);
+    });
+
+    fetch(scriptURL, { method: 'POST', body: formData })
+      .then(response => {
+        window.location.href = "thank_you.html";
+      })
+      .catch(error => {
+        alert('حدث خطأ أثناء الإرسال، حاول مرة أخرى.');
+        console.error('Error!', error.message);
+      });
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
